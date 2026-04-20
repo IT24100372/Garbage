@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Waste Wise</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="form-page">
+
+    <div class="form-container wide">
+        <div class="form-header">
+            <span class="form-icon">♻️</span>
+            <h2>Create Account</h2>
+            <p>Join Waste Wise and book your first pickup today</p>
+        </div>
+
+        <div id="alert-box"></div>
+
+        <form id="registerForm" novalidate>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="name">Full Name <span class="required">*</span></label>
+                    <input type="text" id="name" name="name" class="form-control"
+                           placeholder="John Doe" required>
+                </div>
+                <div class="form-group">
+                    <label for="phone">Phone Number <span class="required">*</span></label>
+                    <input type="tel" id="phone" name="phone" class="form-control"
+                           pattern="[0-9]{10}" maxlength="10" inputmode="numeric"
+                           placeholder="0712345678" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email Address <span class="required">*</span></label>
+                <input type="email" id="email" name="email" class="form-control"
+                       placeholder="you@example.com" required>
+            </div>
+
+            <div class="form-group">
+                <label for="address">Home Address <span class="required">*</span></label>
+                <textarea id="address" name="address" class="form-control"
+                          placeholder="Door No., Street, Area, City - Pincode" rows="2"></textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="password">Password <span class="required">*</span></label>
+                    <input type="password" id="password" name="password" class="form-control"
+                           placeholder="Min 8 chars, include 1 uppercase and 1 number" required>
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm Password <span class="required">*</span></label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" class="form-control"
+                           placeholder="Re-enter password" required>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-full" id="registerBtn">
+                Create Account
+            </button>
+        </form>
+
+        <div class="form-footer">
+            Already have an account? <a href="login.html">Login here</a>
+        </div>
+        <div class="form-footer" style="margin-top: 0.5rem;">
+            <a href="index.html" style="color: var(--text-light);">← Back to Home</a>
+        </div>
+    </div>
+
+    <script>
+        const BASE_URL = window.location.port === '8080'
+            ? `${window.location.protocol}//${window.location.hostname}:8080/api`
+            : 'http://localhost:8080/api';
+
+        function showAlert(message, type = 'error') {
+            const box = document.getElementById('alert-box');
+            const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+            box.innerHTML = `<div class="alert alert-${type}">${icons[type] || ''} ${message}</div>`;
+            if (type !== 'success') setTimeout(() => box.innerHTML = '', 5000);
+        }
+
+        const phoneInput = document.getElementById('phone');
+        phoneInput.addEventListener('input', function () {
+            this.value = this.value.replace(/\D/g, '').slice(0, 10);
+        });
+        phoneInput.addEventListener('paste', function (e) {
+            e.preventDefault();
+            const pasted = (e.clipboardData || window.clipboardData).getData('text') || '';
+            this.value = pasted.replace(/\D/g, '').slice(0, 10);
+        });
+
+        document.getElementById('registerForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const btn = document.getElementById('registerBtn');
+
+            const name = document.getElementById('name').value.trim();
+            const phoneRaw = document.getElementById('phone').value.trim();
+            const phone = phoneRaw.replace(/\D/g, '');
+            const email = document.getElementById('email').value.trim();
+            const address = document.getElementById('address').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (!name || !phone || !email || !address || !password) {
+                showAlert('Please fill in all required fields.', 'warning');
+                return;
+            }
+
+            if (password.length < 8) {
+                showAlert('Password must be at least 8 characters.', 'warning');
+                return;
+            }
+
+            if (!/[A-Z]/.test(password)) {
+                showAlert('Password must contain at least 1 capital letter.', 'warning');
+                return;
+            }
+
+            if (!/\d/.test(password)) {
+                showAlert('Password must contain at least 1 number.', 'warning');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showAlert('Passwords do not match.', 'warning');
+                return;
+            }
+
+            if (!/^\d{10}$/.test(phone)) {
+                showAlert('Phone number must be exactly 10 digits.', 'warning');
+                return;
+            }
+
+            btn.innerHTML = '<span class="spinner"></span> Creating Account...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(`${BASE_URL}/users/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, phone, email, address, password, role: 'USER' })
+                });
+
+                const data = await response.json();
+
+                if (response.ok || response.status === 201) {
+                    localStorage.setItem('user', JSON.stringify(data));
+                    showAlert('Account created! Redirecting to dashboard...', 'success');
+                    setTimeout(() => window.location.href = 'dashboard.html', 1500);
+                } else {
+                    showAlert(data.error || 'Registration failed. Try again.', 'error');
+                }
+            } catch (err) {
+                showAlert('Cannot connect to server. Make sure Spring Boot is running on port 8080.', 'error');
+            } finally {
+                btn.innerHTML = 'Create Account';
+                btn.disabled = false;
+            }
+        });
+    </script>
+
+</body>
+</html>

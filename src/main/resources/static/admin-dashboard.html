@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Waste Wise</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .admin-glass {
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at 10% 12%, rgba(48, 137, 99, 0.22), transparent 34%),
+                radial-gradient(circle at 92% 16%, rgba(255, 143, 0, 0.16), transparent 30%),
+                radial-gradient(circle at 78% 86%, rgba(0, 137, 123, 0.18), transparent 33%),
+                linear-gradient(175deg, #ebf7f1 0%, #e3f0e8 48%, #edf6f2 100%);
+            color: #17382c;
+        }
+
+        .admin-glass-orb {
+            position: fixed;
+            z-index: 0;
+            border-radius: 50%;
+            filter: blur(18px);
+            pointer-events: none;
+            animation: adminOrbFloat 10s ease-in-out infinite;
+        }
+
+        .admin-glass-orb.a {
+            width: 280px;
+            height: 280px;
+            top: -80px;
+            left: -90px;
+            background: rgba(46, 125, 50, 0.2);
+        }
+
+        .admin-glass-orb.b {
+            width: 240px;
+            height: 240px;
+            right: -70px;
+            top: 30%;
+            background: rgba(255, 143, 0, 0.16);
+            animation-delay: 1.8s;
+        }
+
+        .admin-glass-orb.c {
+            width: 210px;
+            height: 210px;
+            bottom: -70px;
+            left: 38%;
+            background: rgba(0, 137, 123, 0.16);
+            animation-delay: 3.1s;
+        }
+
+        @keyframes adminOrbFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-18px); }
+        }
+
+        .admin-glass .dashboard-layout {
+            position: relative;
+            z-index: 1;
+        }
+
+        .admin-glass .sidebar {
+            background: rgba(18, 70, 50, 0.84);
+            backdrop-filter: blur(14px);
+            border-right: 1px solid rgba(255, 255, 255, 0.16);
+            box-shadow: 16px 0 40px rgba(14, 56, 40, 0.22);
+        }
+
+        .admin-glass .sidebar-user {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.24);
+            border-radius: 16px;
+            backdrop-filter: blur(8px);
+        }
+
+        .admin-glass .main-content {
+            background: transparent;
+        }
+
+        .admin-glass .admin-header h1 {
+            color: #134635;
+        }
+
+        .admin-glass .section-panel,
+        .admin-glass .stat-card,
+        .admin-glass .table-wrap,
+        .admin-glass .notif-item {
+            background: rgba(255, 255, 255, 0.58);
+            border: 1px solid rgba(255, 255, 255, 0.54);
+            backdrop-filter: blur(13px);
+            box-shadow: 0 18px 34px rgba(20, 63, 46, 0.12);
+        }
+
+        .admin-glass .section-panel,
+        .admin-glass .table-wrap {
+            border-radius: 14px;
+        }
+
+        .admin-glass .table-wrap thead {
+            background: linear-gradient(120deg, rgba(18, 74, 52, 0.96), rgba(10, 105, 91, 0.92));
+        }
+
+        .admin-glass .table-wrap tbody tr:hover {
+            background: rgba(232, 247, 239, 0.86);
+        }
+
+        .admin-glass .filter-grid .form-control {
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(19, 86, 62, 0.2);
+        }
+
+        .admin-glass .filter-grid .form-control:focus {
+            border-color: rgba(0, 137, 123, 0.6);
+            box-shadow: 0 0 0 3px rgba(0, 137, 123, 0.14);
+        }
+
+        .admin-glass .action-group .btn {
+            border-radius: 10px;
+        }
+
+        .admin-glass .notif-item {
+            border-color: rgba(19, 86, 62, 0.2);
+        }
+
+        @media (max-width: 900px) {
+            .admin-glass-orb { filter: blur(24px); }
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .admin-avatar-icon {
+            width: 28px;
+            height: 28px;
+            color: #ffffff;
+            filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.22));
+        }
+
+        .admin-header h1 {
+            font-size: 1.4rem;
+            color: var(--primary-dark);
+        }
+
+        .section-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(140px, 1fr));
+            gap: 0.8rem;
+        }
+
+        .filter-grid .form-control {
+            background: #fff;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+        }
+
+        .table-wrap table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            min-width: 1000px;
+        }
+
+        .table-wrap thead {
+            background: var(--primary-dark);
+            color: #fff;
+        }
+
+        .table-wrap th,
+        .table-wrap td {
+            padding: 0.72rem 0.9rem;
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .table-wrap tbody tr:hover {
+            background: var(--bg-light);
+        }
+
+        .badge-paid {
+            background: rgba(46, 125, 50, 0.12);
+            color: var(--success);
+            border: 1px solid rgba(46, 125, 50, 0.4);
+            border-radius: 18px;
+            padding: 0.2rem 0.65rem;
+            font-size: 0.72rem;
+            font-weight: 700;
+        }
+
+        .badge-unpaid {
+            background: rgba(249, 168, 37, 0.14);
+            color: #8f6b00;
+            border: 1px solid rgba(249, 168, 37, 0.6);
+            border-radius: 18px;
+            padding: 0.2rem 0.65rem;
+            font-size: 0.72rem;
+            font-weight: 700;
+        }
+
+        .badge-refunded {
+            background: rgba(198, 40, 40, 0.12);
+            color: var(--danger);
+            border: 1px solid rgba(198, 40, 40, 0.4);
+            border-radius: 18px;
+            padding: 0.2rem 0.65rem;
+            font-size: 0.72rem;
+            font-weight: 700;
+        }
+
+        .action-group {
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+        }
+
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        .notif-box {
+            margin-bottom: 1rem;
+        }
+
+        .notif-item {
+            background: rgba(76, 175, 80, 0.12);
+            border: 1px solid var(--border);
+            color: var(--primary-dark);
+            border-radius: 8px;
+            padding: 0.65rem 0.9rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.88rem;
+        }
+
+        .muted {
+            color: var(--text-light);
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 1100px) {
+            .filter-grid {
+                grid-template-columns: repeat(2, minmax(160px, 1fr));
+            }
+        }
+
+        @media (max-width: 680px) {
+            .filter-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .admin-header {
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body class="admin-glass">
+<div class="admin-glass-orb a"></div>
+<div class="admin-glass-orb b"></div>
+<div class="admin-glass-orb c"></div>
+<div class="dashboard-layout">
+    <aside class="sidebar">
+        <div class="sidebar-user">
+            <div class="sidebar-avatar" aria-label="Admin Dashboard">
+                <svg class="admin-avatar-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M12 3L4.5 6V11.7C4.5 16.2 7.7 20.4 12 21.5C16.3 20.4 19.5 16.2 19.5 11.7V6L12 3Z" fill="currentColor" fill-opacity="0.25"/>
+                    <path d="M9.2 12.1L11.1 14L14.8 10.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 3L4.5 6V11.7C4.5 16.2 7.7 20.4 12 21.5C16.3 20.4 19.5 16.2 19.5 11.7V6L12 3Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <h4 id="admin-name">Admin</h4>
+            <p id="admin-email">admin@email.com</p>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#" class="active" data-section="dashboard-section"><span class="nav-icon">📊</span> Dashboard</a>
+            <a href="#" data-section="bookings-section"><span class="nav-icon">📋</span> Bookings</a>
+            <a href="#" data-section="completed-section"><span class="nav-icon">✅</span> Completed</a>
+            <a href="#" data-section="payments-section"><span class="nav-icon">💳</span> Payments</a>
+            <a href="#" id="logout-btn" style="margin-top:auto;"><span class="nav-icon">🚪</span> Logout</a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <div class="admin-header">
+            <h1>Garbage Collection Admin Dashboard</h1>
+        </div>
+
+        <div id="alert-box"></div>
+        <div class="notif-box" id="notif-box"></div>
+
+        <section id="dashboard-section" class="content-section active">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">📦</div>
+                    <div class="stat-info"><h3 id="total-bookings">0</h3><p>Total Bookings</p></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-info"><h3 id="completed-bookings">0</h3><p>Completed</p></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⏳</div>
+                    <div class="stat-info"><h3 id="pending-bookings">0</h3><p>Pending</p></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">✖</div>
+                    <div class="stat-info"><h3 id="cancelled-bookings">0</h3><p>Cancelled</p></div>
+                </div>
+            </div>
+
+            <div class="section-panel">
+                <h3 class="page-title" style="font-size:1rem; margin-bottom:0.9rem;">Booking Filters</h3>
+                <div class="filter-grid">
+                    <input id="filter-user" class="form-control" placeholder="Search by user/address">
+                    <input id="filter-date" type="date" class="form-control">
+                    <select id="filter-status" class="form-control">
+                        <option value="ALL">All Statuses</option>
+                        <option value="PENDING">Pending</option>
+                        <option value="APPROVED">Approved</option>
+                        <option value="COMPLETED">Completed</option>
+                        <option value="CANCELLED">Cancelled</option>
+                    </select>
+                    <select id="filter-payment" class="form-control">
+                        <option value="ALL">All Payments</option>
+                        <option value="PAID">Paid</option>
+                        <option value="UNPAID">Unpaid</option>
+                    </select>
+                    <button class="btn btn-secondary btn-sm" id="apply-filter-btn">Apply</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="bookings-section" class="content-section">
+            <div class="section-panel">
+                <div class="page-title" style="font-size:1.05rem; margin-bottom:0.8rem;">All Bookings</div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>#ID</th>
+                            <th>User</th>
+                            <th>Address</th>
+                            <th>Date</th>
+                            <th>Waste</th>
+                            <th>Booking Status</th>
+                            <th>Payment</th>
+                            <th>Payment Details</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody id="bookings-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section id="completed-section" class="content-section">
+            <div class="section-panel">
+                <div class="page-title" style="font-size:1.05rem; margin-bottom:0.8rem;">Completed Bookings</div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>#ID</th>
+                            <th>User</th>
+                            <th>Address</th>
+                            <th>Date</th>
+                            <th>Waste</th>
+                            <th>Payment</th>
+                            <th>Amount</th>
+                        </tr>
+                        </thead>
+                        <tbody id="completed-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section id="payments-section" class="content-section">
+            <div class="section-panel">
+                <div class="page-title" style="font-size:1.05rem; margin-bottom:0.8rem;">Payment Management</div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Payment ID</th>
+                            <th>Booking ID</th>
+                            <th>User</th>
+                            <th>Amount</th>
+                            <th>Method</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                        </tr>
+                        </thead>
+                        <tbody id="payments-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script>
+    const BASE_URL = window.location.port === '8080'
+        ? `${window.location.protocol}//${window.location.hostname}:8080/api`
+        : 'http://localhost:8080/api';
+    const user = JSON.parse(localStorage.getItem('user') || 'null');
+
+    if (!user) {
+        window.location.href = 'login.html';
+    }
+
+    const safeUser = encodeURIComponent(user?.id || '');
+
+    function showAlert(message, type = 'error') {
+        const box = document.getElementById('alert-box');
+        const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+        box.innerHTML = `<div class="alert alert-${type}">${icons[type] || ''} ${message}</div>`;
+        if (type !== 'success') {
+            setTimeout(() => { box.innerHTML = ''; }, 3000);
+        }
+    }
+
+    function esc(value) {
+        if (value === null || value === undefined) {
+            return '—';
+        }
+        return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function bookingBadge(status) {
+        const classes = {
+            PENDING: 'badge-pending',
+            APPROVED: 'badge-confirmed',
+            COMPLETED: 'badge-collected',
+            CANCELLED: 'badge-cancelled'
+        };
+        return `<span class="badge ${classes[status] || 'badge-pending'}">${esc(status)}</span>`;
+    }
+
+    function paymentBadge(status) {
+        if (status === 'PAID') {
+            return '<span class="badge-paid">PAID</span>';
+        }
+        if (status === 'REFUNDED') {
+            return '<span class="badge-refunded">REFUNDED</span>';
+        }
+        if (status === 'FAILED') {
+            return '<span class="badge-unpaid">FAILED</span>';
+        }
+        return '<span class="badge-unpaid">UNPAID</span>';
+    }
+
+    function formatDate(value) {
+        if (!value) return '—';
+        return new Date(value).toLocaleString('en-LK');
+    }
+
+    async function verifyAdmin() {
+        try {
+            const response = await fetch(`${BASE_URL}/admin/auth/${safeUser}`);
+            if (!response.ok || user.role !== 'ADMIN') {
+                localStorage.removeItem('user');
+                window.location.href = 'login.html';
+            }
+        } catch (error) {
+            showAlert('Unable to verify admin session.', 'warning');
+        }
+    }
+
+    function buildFilterQuery() {
+        const userSearch = document.getElementById('filter-user').value.trim();
+        const date = document.getElementById('filter-date').value;
+        const status = document.getElementById('filter-status').value;
+        const payment = document.getElementById('filter-payment').value;
+
+        const query = new URLSearchParams();
+        if (userSearch) query.append('user', userSearch);
+        if (date) query.append('date', date);
+        if (status && status !== 'ALL') query.append('status', status);
+        if (payment && payment !== 'ALL') query.append('payment', payment);
+        return query.toString();
+    }
+
+    async function loadSummary() {
+        const response = await fetch(`${BASE_URL}/admin/summary`);
+        const summary = await response.json();
+        document.getElementById('total-bookings').textContent = summary.totalBookings || 0;
+        document.getElementById('completed-bookings').textContent = summary.completedBookings || 0;
+        document.getElementById('pending-bookings').textContent = summary.pendingBookings || 0;
+        document.getElementById('cancelled-bookings').textContent = summary.cancelledBookings || 0;
+
+        const lastSeen = Number(localStorage.getItem('adminLastSeenBookingId') || 0);
+        if ((summary.latestBookingId || 0) > lastSeen) {
+            localStorage.setItem('adminLastSeenBookingId', String(summary.latestBookingId || 0));
+        }
+    }
+
+    async function loadBookings() {
+        const query = buildFilterQuery();
+        const response = await fetch(`${BASE_URL}/admin/bookings${query ? '?' + query : ''}`);
+        const bookings = await response.json();
+
+        const body = document.getElementById('bookings-body');
+        if (!Array.isArray(bookings) || bookings.length === 0) {
+            body.innerHTML = `<tr><td colspan="9" class="muted">No bookings found.</td></tr>`;
+            return;
+        }
+
+        body.innerHTML = bookings.map(booking => {
+            const canApprove = booking.bookingStatus === 'PENDING';
+            const canComplete = booking.paymentStatus === 'PAID' && (booking.bookingStatus === 'APPROVED' || booking.bookingStatus === 'PENDING');
+            const canCancel = booking.bookingStatus !== 'COMPLETED' && booking.bookingStatus !== 'CANCELLED';
+            const canRefund = booking.bookingStatus === 'CANCELLED'
+                && booking.paymentStatus === 'PAID'
+                && booking.paymentMethod === 'NET_BANKING';
+            const canCollectCash = booking.paymentMethod === 'CASH_ON_COLLECTION'
+                && booking.paymentStatus === 'UNPAID'
+                && booking.bookingStatus !== 'CANCELLED'
+                && booking.bookingStatus !== 'COMPLETED';
+
+            return `
+                <tr>
+                    <td>#${esc(booking.id)}</td>
+                    <td>${esc(booking.userName)}<div class="muted">${esc(booking.userEmail)}</div></td>
+                    <td>${esc(booking.pickupAddress)}</td>
+                    <td>${esc(booking.collectionDate)}</td>
+                    <td>${esc(booking.wasteType)}</td>
+                    <td>${bookingBadge(booking.bookingStatus)}</td>
+                    <td>${paymentBadge(booking.paymentStatus)}</td>
+                    <td>
+                        <div>Amount: ${esc(booking.amount)}</div>
+                        <div class="muted">${esc(booking.paymentMethod || 'N/A')} • ${booking.paymentDate ? formatDate(booking.paymentDate) : 'N/A'}</div>
+                    </td>
+                    <td>
+                        <div class="action-group">
+                            ${canApprove ? `<button class="btn btn-primary btn-sm" onclick="approveBooking(${booking.id})">Approve</button>` : ''}
+                            ${canComplete ? `<button class="btn btn-secondary btn-sm" onclick="completeBooking(${booking.id})">Complete</button>` : ''}
+                            ${canCollectCash ? `<button class="btn btn-sm" style="background:#e8f5e9;color:#1b5e20;border:1px solid #a5d6a7;" onclick="collectCash(${booking.id})">Collect Cash</button>` : ''}
+                            ${canCancel ? `<button class="btn btn-sm" style="background:#fff3cd;color:#8f6b00;border:1px solid #ffe08a;" onclick="cancelBooking(${booking.id})">Cancel</button>` : ''}
+                            ${canRefund ? `<button class="btn btn-sm" style="background:#ffebee;color:#b71c1c;border:1px solid #ffcdd2;" onclick="refundBooking(${booking.id})">Refund</button>` : ''}
+                            <button class="btn btn-danger btn-sm" onclick="deleteBooking(${booking.id})">Delete</button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    async function loadCompleted() {
+        const userSearch = document.getElementById('filter-user').value.trim();
+        const date = document.getElementById('filter-date').value;
+        const payment = document.getElementById('filter-payment').value;
+
+        const query = new URLSearchParams();
+        if (userSearch) query.append('user', userSearch);
+        if (date) query.append('date', date);
+        if (payment && payment !== 'ALL') query.append('payment', payment);
+
+        const response = await fetch(`${BASE_URL}/admin/bookings/completed${query.toString() ? '?' + query.toString() : ''}`);
+        const bookings = await response.json();
+
+        const body = document.getElementById('completed-body');
+        if (!Array.isArray(bookings) || bookings.length === 0) {
+            body.innerHTML = `<tr><td colspan="7" class="muted">No completed bookings found.</td></tr>`;
+            return;
+        }
+
+        body.innerHTML = bookings.map(booking => `
+            <tr>
+                <td>#${esc(booking.id)}</td>
+                <td>${esc(booking.userName)}<div class="muted">${esc(booking.userEmail)}</div></td>
+                <td>${esc(booking.pickupAddress)}</td>
+                <td>${esc(booking.collectionDate)}</td>
+                <td>${esc(booking.wasteType)}</td>
+                <td>${paymentBadge(booking.paymentStatus)}</td>
+                <td>${esc(booking.amount)}</td>
+            </tr>
+        `).join('');
+    }
+
+    async function loadPayments() {
+        const response = await fetch(`${BASE_URL}/admin/payments`);
+        const payments = await response.json();
+
+        const body = document.getElementById('payments-body');
+        if (!Array.isArray(payments) || payments.length === 0) {
+            body.innerHTML = `<tr><td colspan="7" class="muted">No payment records found.</td></tr>`;
+            return;
+        }
+
+        body.innerHTML = payments.map(payment => `
+            <tr>
+                <td>${esc(payment.paymentId)}</td>
+                <td>${esc(payment.bookingId)}</td>
+                <td>${esc(payment.userName)}<div class="muted">${esc(payment.userEmail)}</div></td>
+                <td>${esc(payment.amount)}</td>
+                <td>${esc(payment.paymentMethod || 'N/A')}</td>
+                <td>${esc(payment.paymentStatus)}</td>
+                <td>${payment.paymentDate ? formatDate(payment.paymentDate) : '—'}</td>
+            </tr>
+        `).join('');
+    }
+
+    async function approveBooking(bookingId) {
+        try {
+            const response = await fetch(`${BASE_URL}/admin/booking/${bookingId}/approve`, { method: 'PUT' });
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Approve action failed');
+            }
+            showAlert('Booking approved successfully.', 'success');
+            await refreshAll();
+        } catch (error) {
+            showAlert(error.message, 'error');
+        }
+    }
+
+    async function completeBooking(bookingId) {
+        try {
+            const response = await fetch(`${BASE_URL}/admin/booking/${bookingId}/complete`, { method: 'PUT' });
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Complete action failed');
+            }
+            showAlert('Booking marked as completed.', 'success');
+            await refreshAll();
+        } catch (error) {
+            showAlert(error.message, 'error');
+        }
+    }
+
+    async function collectCash(bookingId) {
+        if (!confirm(`Mark cash collected and complete booking #${bookingId}?`)) return;
+
+        try {
+            const response = await fetch(`${BASE_URL}/admin/booking/${bookingId}/collect-cash`, { method: 'PUT' });
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Collect cash action failed');
+            }
+            showAlert('Cash marked as paid and booking completed.', 'success');
+            await refreshAll();
+        } catch (error) {
+            showAlert(error.message, 'error');
+        }
+    }
+
+    async function deleteBooking(bookingId) {
+        try {
+            const response = await fetch(`${BASE_URL}/admin/booking/${bookingId}`, { method: 'DELETE' });
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Delete action failed');
+            }
+            showAlert('Booking deleted successfully.', 'success');
+            await refreshAll();
+        } catch (error) {
+            showAlert(error.message, 'error');
+        }
+    }
+
+    async function cancelBooking(bookingId) {
+        try {
+            const response = await fetch(`${BASE_URL}/admin/booking/${bookingId}/cancel`, { method: 'PUT' });
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Cancel action failed');
+            }
+            showAlert('Booking cancelled. Use Refund to process payment return.', 'success');
+            await refreshAll();
+        } catch (error) {
+            showAlert(error.message, 'error');
+        }
+    }
+
+    async function refundBooking(bookingId) {
+        if (!confirm(`Process manual refund for booking #${bookingId}?`)) return;
+
+        try {
+            const response = await fetch(`${BASE_URL}/admin/booking/${bookingId}/refund`, { method: 'PUT' });
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Refund action failed');
+            }
+            showAlert('Manual refund completed successfully.', 'success');
+            await refreshAll();
+        } catch (error) {
+            showAlert(error.message, 'error');
+        }
+    }
+
+    async function checkNewBookingNotifications() {
+        const lastSeen = Number(localStorage.getItem('adminLastSeenBookingId') || 0);
+        const response = await fetch(`${BASE_URL}/admin/notifications/new-bookings?afterId=${lastSeen}`);
+        const items = await response.json();
+
+        const notifBox = document.getElementById('notif-box');
+        if (!Array.isArray(items) || items.length === 0) {
+            notifBox.innerHTML = '';
+            return;
+        }
+
+        const newestId = Math.max(...items.map(item => Number(item.id || 0)));
+        localStorage.setItem('adminLastSeenBookingId', String(newestId));
+
+        notifBox.innerHTML = items.slice(0, 4).map(item => `
+            <div class="notif-item">
+                New booking #${esc(item.id)} from ${esc(item.userName)} (${esc(item.wasteType)}) on ${esc(item.collectionDate)}
+            </div>
+        `).join('');
+
+        setTimeout(() => {
+            notifBox.innerHTML = '';
+        }, 6000);
+    }
+
+    async function refreshAll() {
+        try {
+            await Promise.all([loadSummary(), loadBookings(), loadCompleted(), loadPayments()]);
+        } catch (error) {
+            showAlert('Failed to load admin dashboard data.', 'error');
+        }
+    }
+
+    function setupSidebarNavigation() {
+        const links = Array.from(document.querySelectorAll('.sidebar-nav a[data-section]'));
+        links.forEach(link => {
+            link.addEventListener('click', event => {
+                event.preventDefault();
+                links.forEach(item => item.classList.remove('active'));
+                link.classList.add('active');
+
+                const sectionId = link.getAttribute('data-section');
+                document.querySelectorAll('.content-section').forEach(section => {
+                    section.classList.toggle('active', section.id === sectionId);
+                });
+            });
+        });
+    }
+
+    function wireEvents() {
+        document.getElementById('admin-name').textContent = user.name || 'Admin';
+        document.getElementById('admin-email').textContent = user.email || '';
+
+        document.getElementById('logout-btn').addEventListener('click', event => {
+            event.preventDefault();
+            localStorage.removeItem('user');
+            window.location.href = 'login.html';
+        });
+
+        document.getElementById('apply-filter-btn').addEventListener('click', refreshAll);
+    }
+
+    (async function init() {
+        wireEvents();
+        setupSidebarNavigation();
+        await verifyAdmin();
+        await refreshAll();
+        await checkNewBookingNotifications();
+        setInterval(checkNewBookingNotifications, 20000);
+    })();
+</script>
+</body>
+</html>

@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Waste Wise</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .user-glass {
+            background:
+                radial-gradient(circle at 8% 8%, rgba(49, 145, 104, 0.2), transparent 32%),
+                radial-gradient(circle at 92% 12%, rgba(255, 143, 0, 0.16), transparent 28%),
+                radial-gradient(circle at 80% 85%, rgba(0, 137, 123, 0.18), transparent 30%),
+                linear-gradient(175deg, #edf8f2 0%, #e5f2eb 45%, #edf6f2 100%);
+            color: #173428;
+            min-height: 100vh;
+        }
+
+        .user-glass-orb {
+            position: fixed;
+            z-index: 0;
+            border-radius: 50%;
+            filter: blur(18px);
+            pointer-events: none;
+            animation: userOrbFloat 9s ease-in-out infinite;
+        }
+
+        .user-glass-orb.a {
+            width: 260px;
+            height: 260px;
+            left: -80px;
+            top: 100px;
+            background: rgba(46, 125, 50, 0.2);
+        }
+
+        .user-glass-orb.b {
+            width: 220px;
+            height: 220px;
+            right: -70px;
+            top: 34%;
+            background: rgba(255, 143, 0, 0.16);
+            animation-delay: 1.6s;
+        }
+
+        .user-glass-orb.c {
+            width: 200px;
+            height: 200px;
+            left: 42%;
+            bottom: -70px;
+            background: rgba(0, 137, 123, 0.18);
+            animation-delay: 3s;
+        }
+
+        @keyframes userOrbFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-16px); }
+        }
+
+        .user-glass .dashboard-layout {
+            position: relative;
+            z-index: 1;
+            backdrop-filter: blur(3px);
+        }
+
+        .user-glass .sidebar {
+            background: rgba(19, 72, 52, 0.82);
+            backdrop-filter: blur(14px);
+            border-right: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 14px 0 40px rgba(15, 58, 40, 0.2);
+        }
+
+        .user-glass .sidebar-user {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.24);
+            border-radius: 16px;
+            backdrop-filter: blur(8px);
+        }
+
+        .user-glass .main-content {
+            background: transparent;
+        }
+
+        .user-glass .page-title {
+            color: #174936;
+            letter-spacing: 0.2px;
+        }
+
+        .user-glass .stat-card,
+        .user-glass .booking-card,
+        .user-glass .card,
+        .user-glass .modal-box {
+            background: rgba(255, 255, 255, 0.56);
+            border: 1px solid rgba(255, 255, 255, 0.52);
+            backdrop-filter: blur(13px);
+            box-shadow: 0 18px 32px rgba(20, 63, 46, 0.12);
+        }
+
+        .user-glass .stat-card:hover,
+        .user-glass .booking-card:hover,
+        .user-glass .card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 24px 38px rgba(20, 63, 46, 0.16);
+        }
+
+        .user-glass .filter-btn {
+            background: rgba(255, 255, 255, 0.58);
+            border: 1px solid rgba(25, 98, 71, 0.2);
+            backdrop-filter: blur(8px);
+        }
+
+        .user-glass .filter-btn.active,
+        .user-glass .filter-btn:hover {
+            background: linear-gradient(145deg, #2e7d32, #0d7a6f);
+            border-color: transparent;
+            color: #fff;
+        }
+
+        .user-glass .modal-overlay {
+            background: rgba(10, 32, 23, 0.42);
+            backdrop-filter: blur(6px);
+        }
+
+        .user-glass .modal-title {
+            border-bottom-color: rgba(19, 86, 62, 0.2);
+        }
+
+        .user-glass .form-control {
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(19, 86, 62, 0.18);
+        }
+
+        .user-glass .form-control:focus {
+            border-color: rgba(0, 137, 123, 0.6);
+            box-shadow: 0 0 0 3px rgba(0, 137, 123, 0.14);
+        }
+
+        .user-glass .booking-actions .btn {
+            border-radius: 10px;
+        }
+
+        @media (max-width: 900px) {
+            .user-glass-orb { filter: blur(24px); }
+        }
+
+        /* Modal Overlay */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal-box {
+            background: #fff;
+            border-radius: var(--radius);
+            padding: 2rem;
+            width: 100%;
+            max-width: 520px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        .modal-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 1.2rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 2px solid var(--border);
+        }
+        .modal-close {
+            position: absolute;
+            top: 1rem; right: 1.2rem;
+            background: none; border: none;
+            font-size: 1.5rem; cursor: pointer;
+            color: var(--text-light);
+            line-height: 1;
+        }
+        .modal-close:hover { color: var(--danger); }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 0.55rem 0;
+            border-bottom: 1px solid var(--bg-light);
+            gap: 1rem;
+            font-size: 0.92rem;
+        }
+        .detail-row span:first-child { color: var(--text-light); min-width: 130px; }
+        .detail-row span:last-child { font-weight: 600; color: var(--text-dark); text-align: right; }
+        .modal-actions { display: flex; gap: 0.8rem; margin-top: 1.4rem; flex-wrap: wrap; }
+        .filter-bar {
+            display: flex;
+            gap: 0.6rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .filter-btn {
+            padding: 0.35rem 1rem;
+            border-radius: 20px;
+            border: 1.5px solid var(--border);
+            background: #fff;
+            color: var(--text-medium);
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: var(--transition);
+        }
+        .filter-btn.active, .filter-btn:hover {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+        }
+    </style>
+</head>
+<body class="user-glass">
+
+    <div class="user-glass-orb a"></div>
+    <div class="user-glass-orb b"></div>
+    <div class="user-glass-orb c"></div>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <span class="logo-icon">♻️</span>
+            <span>Waste Wise</span>
+        </div>
+        <ul class="navbar-nav">
+            <li><a href="dashboard.html" class="active">Dashboard</a></li>
+            <li><a href="booking.html" class="btn-nav">+ New Booking</a></li>
+        </ul>
+    </nav>
+
+    <!-- ====== VIEW DETAILS MODAL ====== -->
+    <div class="modal-overlay" id="view-modal">
+        <div class="modal-box">
+            <button class="modal-close" onclick="closeModal('view-modal')">✕</button>
+            <div class="modal-title">📋 Booking Details</div>
+            <div id="view-modal-content"></div>
+            <div class="modal-actions" id="view-modal-actions"></div>
+        </div>
+    </div>
+
+    <!-- ====== EDIT BOOKING MODAL ====== -->
+    <div class="modal-overlay" id="edit-modal">
+        <div class="modal-box">
+            <button class="modal-close" onclick="closeModal('edit-modal')">✕</button>
+            <div class="modal-title">✏️ Edit Booking</div>
+            <div id="edit-alert"></div>
+            <form id="edit-form" onsubmit="submitEdit(event)">
+                <input type="hidden" id="edit-booking-id">
+                <div class="form-group">
+                    <label>Waste Type <span class="required">*</span></label>
+                    <select id="edit-waste-type" class="form-control" required>
+                        <option value="GENERAL">🗑️ General Waste — LKR 200</option>
+                        <option value="RECYCLABLE">📦 Recyclable Waste — LKR 150</option>
+                        <option value="ORGANIC">🌱 Organic Waste — LKR 100</option>
+                        <option value="HAZARDOUS">☣️ Hazardous Waste — LKR 500</option>
+                        <option value="ELECTRONIC">💻 Electronic Waste — LKR 400</option>
+                        <option value="CONSTRUCTION">🧱 Construction Debris — LKR 800</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Pickup Address <span class="required">*</span></label>
+                    <textarea id="edit-address" class="form-control" rows="2" required></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Collection Date <span class="required">*</span></label>
+                        <input type="date" id="edit-date" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Time Slot <span class="required">*</span></label>
+                        <select id="edit-time-slot" class="form-control" required>
+                            <option value="MORNING">08:00 AM – 10:00 AM</option>
+                            <option value="MID_MORNING">10:00 AM – 12:00 PM</option>
+                            <option value="AFTERNOON">12:00 PM – 02:00 PM</option>
+                            <option value="LATE_AFTERNOON">02:00 PM – 04:00 PM</option>
+                            <option value="EVENING">04:00 PM – 06:00 PM</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Special Instructions</label>
+                    <textarea id="edit-instructions" class="form-control" rows="2" placeholder="Any special notes..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Estimated Weight (kg) <span class="required">*</span></label>
+                    <input type="number" id="edit-weight" class="form-control" min="0.1" max="10000" step="0.1" placeholder="e.g. 5.5" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn btn-primary" id="edit-save-btn">💾 Save Changes</button>
+                    <button type="button" class="btn" style="background:var(--bg-light);color:var(--text-dark);" onclick="closeModal('edit-modal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="dashboard-layout">
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-user">
+                <div class="sidebar-avatar">👤</div>
+                <h4 id="sidebar-name">User</h4>
+                <p id="sidebar-email">user@email.com</p>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="active">
+                    <span class="nav-icon">🏠</span> Dashboard
+                </a>
+                <a href="booking.html">
+                    <span class="nav-icon">📋</span> New Booking
+                </a>
+                <a href="admin-dashboard.html" id="admin-link">
+                    <span class="nav-icon">📊</span> All Bookings
+                </a>
+                <a href="login.html" id="logout-btn" style="margin-top: auto;">
+                    <span class="nav-icon">🚪</span> Logout
+                </a>
+            </nav>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+            <div class="page-title">🏠 Dashboard Overview</div>
+
+            <!-- STATS -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">📦</div>
+                    <div class="stat-info"><h3 id="stat-total">0</h3><p>Total Bookings</p></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⏳</div>
+                    <div class="stat-info"><h3 id="stat-pending">0</h3><p>Pending</p></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-info"><h3 id="stat-confirmed">0</h3><p>Confirmed</p></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🚛</div>
+                    <div class="stat-info"><h3 id="stat-collected">0</h3><p>Collected</p></div>
+                </div>
+            </div>
+
+            <!-- BOOKINGS LIST -->
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.8rem;">
+                <div class="page-title" style="font-size:1.2rem; margin-bottom:0;">📋 My Bookings</div>
+                <a href="booking.html" class="btn btn-primary btn-sm">+ New Booking</a>
+            </div>
+
+            <!-- FILTER BAR -->
+            <div class="filter-bar">
+                <button class="filter-btn active" onclick="filterBookings('ALL', this)">All</button>
+                <button class="filter-btn" onclick="filterBookings('PENDING', this)">⏳ Pending</button>
+                <button class="filter-btn" onclick="filterBookings('CONFIRMED', this)">✅ Confirmed</button>
+                <button class="filter-btn" onclick="filterBookings('COLLECTED', this)">🚛 Collected</button>
+                <button class="filter-btn" onclick="filterBookings('CANCELLED', this)">✖ Cancelled</button>
+            </div>
+
+            <div id="alert-box"></div>
+            <div id="bookings-container">
+                <div style="text-align:center; padding:2rem; color:var(--text-light);">
+                    <span class="spinner"></span> Loading bookings...
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const BASE_URL = window.location.port === '8080'
+            ? `${window.location.protocol}//${window.location.hostname}:8080/api`
+            : 'http://localhost:8080/api';
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user) window.location.href = 'login.html';
+
+        document.getElementById('sidebar-name').textContent = user.name || 'User';
+        document.getElementById('sidebar-email').textContent = user.email || '';
+        if (user.role !== 'ADMIN') {
+            document.getElementById('admin-link').style.display = 'none';
+        }
+        document.getElementById('logout-btn').addEventListener('click', e => {
+            e.preventDefault();
+            localStorage.removeItem('user');
+            window.location.href = 'login.html';
+        });
+
+        const wasteLabels = {
+            GENERAL: '🗑️ General Waste', RECYCLABLE: '📦 Recyclable Waste',
+            ORGANIC: '🌱 Organic Waste', HAZARDOUS: '☣️ Hazardous Waste',
+            ELECTRONIC: '💻 Electronic Waste', CONSTRUCTION: '🧱 Construction Debris'
+        };
+        const timeSlotLabels = {
+            MORNING: '08:00 AM – 10:00 AM', MID_MORNING: '10:00 AM – 12:00 PM',
+            AFTERNOON: '12:00 PM – 02:00 PM', LATE_AFTERNOON: '02:00 PM – 04:00 PM',
+            EVENING: '04:00 PM – 06:00 PM'
+        };
+        const slotStartHour = {
+            MORNING: 8,
+            MID_MORNING: 10,
+            AFTERNOON: 12,
+            LATE_AFTERNOON: 14,
+            EVENING: 16
+        };
+        const allEditSlotValues = ['MORNING', 'MID_MORNING', 'AFTERNOON', 'LATE_AFTERNOON', 'EVENING'];
+
+        function toLocalDateInputValue(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function isPastSlotForToday(slotValue, selectedDateValue) {
+            if (!slotValue || !selectedDateValue) return false;
+            const todayLocal = toLocalDateInputValue(new Date());
+            if (selectedDateValue !== todayLocal) return false;
+            const startHour = slotStartHour[slotValue];
+            if (typeof startHour !== 'number') return false;
+            const now = new Date();
+            return (startHour * 60) <= (now.getHours() * 60 + now.getMinutes());
+        }
+
+        function refreshEditTimeSlotOptions(preferredValue = '') {
+            const dateValue = document.getElementById('edit-date').value;
+            const slotSelect = document.getElementById('edit-time-slot');
+            const available = allEditSlotValues.filter(slot => !isPastSlotForToday(slot, dateValue));
+
+            slotSelect.innerHTML = '<option value="">-- Select Slot --</option>';
+            available.forEach(slot => {
+                const option = document.createElement('option');
+                option.value = slot;
+                option.textContent = timeSlotLabels[slot] || slot;
+                slotSelect.appendChild(option);
+            });
+
+            if (preferredValue && available.includes(preferredValue)) {
+                slotSelect.value = preferredValue;
+            } else {
+                slotSelect.value = '';
+            }
+        }
+        function normalizeStatus(status) {
+            if (status === 'APPROVED') return 'CONFIRMED';
+            if (status === 'COMPLETED') return 'COLLECTED';
+            return status;
+        }
+
+        function getBadgeClass(s) {
+            const normalized = normalizeStatus(s);
+            return {PENDING:'badge-pending',CONFIRMED:'badge-confirmed',COLLECTED:'badge-collected',CANCELLED:'badge-cancelled'}[normalized] || 'badge-pending';
+        }
+
+        // Verify user still exists in DB (catches stale localStorage after data clear)
+        async function validateSession() {
+            try {
+                const res = await fetch(`${BASE_URL}/users/${user.id}`);
+                if (res.status === 404 || !res.ok) {
+                    localStorage.removeItem('user');
+                    alert('Your session is no longer valid. Please log in again.');
+                    window.location.href = 'login.html';
+                    return false;
+                }
+            } catch (e) { /* server down - allow page to load */ }
+            return true;
+        }
+
+        let allBookings = [];
+        let currentFilter = 'ALL';
+
+        function showAlert(msg, type = 'error') {
+            const box = document.getElementById('alert-box');
+            const icons = {success:'✅',error:'❌',warning:'⚠️',info:'ℹ️'};
+            box.innerHTML = `<div class="alert alert-${type}">${icons[type]||''} ${msg}</div>`;
+            if (type !== 'success') setTimeout(() => box.innerHTML = '', 5000);
+        }
+
+        async function loadBookings() {
+            try {
+                const res = await fetch(`${BASE_URL}/bookings/user/${user.id}`);
+                allBookings = await res.json();
+                updateStats();
+                renderBookings();
+            } catch (err) {
+                document.getElementById('bookings-container').innerHTML =
+                    `<div class="alert alert-error">❌ Cannot load bookings. Is the server running?</div>`;
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('stat-total').textContent = allBookings.length;
+            document.getElementById('stat-pending').textContent = allBookings.filter(b => normalizeStatus(b.status) === 'PENDING').length;
+            document.getElementById('stat-confirmed').textContent = allBookings.filter(b => normalizeStatus(b.status) === 'CONFIRMED').length;
+            document.getElementById('stat-collected').textContent = allBookings.filter(b => normalizeStatus(b.status) === 'COLLECTED').length;
+        }
+
+        function filterBookings(status, btn) {
+            currentFilter = status;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderBookings();
+        }
+
+        function renderBookings() {
+            const bookings = currentFilter === 'ALL'
+                ? allBookings
+                : allBookings.filter(b => normalizeStatus(b.status) === currentFilter);
+            const container = document.getElementById('bookings-container');
+
+            if (bookings.length === 0) {
+                container.innerHTML = `
+                    <div class="card" style="text-align:center; padding:2.5rem;">
+                        <span style="font-size:3rem;">📭</span>
+                        <p style="margin-top:1rem; color:var(--text-medium);">No bookings found.</p>
+                        <a href="booking.html" class="btn btn-primary" style="margin-top:1rem;display:inline-flex;">+ Book a Pickup</a>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = bookings.map(b => `
+                <div class="booking-card">
+                    <div class="booking-header">
+                        <div>
+                            <div style="font-weight:700; color:var(--primary-dark); margin-bottom:2px;">${wasteLabels[b.wasteType] || b.wasteType}</div>
+                            <div class="booking-id">Booking #${b.id} &bull; ${new Date(b.createdAt).toLocaleDateString('en-LK')}</div>
+                        </div>
+                        <span class="badge ${getBadgeClass(b.status)}">${b.status}</span>
+                    </div>
+                    <div class="booking-details">
+                        <div class="booking-detail-item"><span>📅 Collection Date</span><span>${b.collectionDate}</span></div>
+                        <div class="booking-detail-item"><span>🕐 Time Slot</span><span>${timeSlotLabels[b.timeSlot] || b.timeSlot}</span></div>
+                        <div class="booking-detail-item"><span>⚖️ Weight</span><span>${b.weight != null ? b.weight + ' kg' : '—'}</span></div>
+                        <div class="booking-detail-item"><span>💰 Amount</span><span>LKR ${b.amount}</span></div>
+                        <div class="booking-detail-item"><span>📍 Address</span><span>${(b.pickupAddress || '').substring(0, 45)}${b.pickupAddress && b.pickupAddress.length > 45 ? '…' : ''}</span></div>
+                    </div>
+                    <div class="booking-actions">
+                        ${b.status === 'PENDING' ? `<a href="payment.html?bookingId=${b.id}&amount=${b.amount}" class="btn btn-secondary btn-sm">💳 Pay Now</a>` : ''}
+                        ${(b.status === 'PENDING' || b.status === 'CONFIRMED') ? `<button class="btn btn-primary btn-sm" onclick='openEditModal(${JSON.stringify(b)})'>✏️ Edit</button>` : ''}
+                        ${b.status === 'PENDING' ? `<button class="btn btn-danger btn-sm" onclick="cancelBooking(${b.id})">✖ Cancel</button>` : ''}
+                        ${b.status !== 'COLLECTED' ? `<button class="btn btn-sm" style="background:#fbe9e7;color:var(--danger);border:1px solid #ffccbc;" onclick="deleteBooking(${b.id})">🗑 Delete</button>` : ''}
+                        <button class="btn btn-sm" style="background:var(--bg-light);color:var(--primary-dark);" onclick='openViewModal(${JSON.stringify(b)})'>👁 View</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ---- VIEW MODAL ----
+        function openViewModal(b) {
+            document.getElementById('view-modal-content').innerHTML = `
+                <div class="detail-row"><span>Booking ID</span><span>#${b.id}</span></div>
+                <div class="detail-row"><span>Status</span><span><span class="badge ${getBadgeClass(b.status)}">${b.status}</span></span></div>
+                <div class="detail-row"><span>Waste Type</span><span>${wasteLabels[b.wasteType] || b.wasteType}</span></div>
+                <div class="detail-row"><span>Weight</span><span>${b.weight != null ? b.weight + ' kg' : '—'}</span></div>
+                <div class="detail-row"><span>Pickup Address</span><span>${b.pickupAddress}</span></div>
+                <div class="detail-row"><span>Collection Date</span><span>${b.collectionDate}</span></div>
+                <div class="detail-row"><span>Time Slot</span><span>${timeSlotLabels[b.timeSlot] || b.timeSlot}</span></div>
+                <div class="detail-row"><span>Amount</span><span>LKR ${b.amount}</span></div>
+                <div class="detail-row"><span>Special Instructions</span><span>${b.specialInstructions || '—'}</span></div>
+                <div class="detail-row"><span>Created</span><span>${new Date(b.createdAt).toLocaleString('en-LK')}</span></div>
+            `;
+            const actions = document.getElementById('view-modal-actions');
+            actions.innerHTML = '';
+            if (b.status === 'PENDING') {
+                actions.innerHTML += `<a href="payment.html?bookingId=${b.id}&amount=${b.amount}" class="btn btn-secondary btn-sm">💳 Pay Now</a>`;
+                actions.innerHTML += `<button class="btn btn-danger btn-sm" onclick="closeModal('view-modal'); cancelBooking(${b.id})">✖ Cancel</button>`;
+            }
+            if (b.status === 'PENDING' || b.status === 'CONFIRMED') {
+                actions.innerHTML += `<button class="btn btn-primary btn-sm" onclick="closeModal('view-modal'); openEditModal(${JSON.stringify(b).replace(/"/g,'&quot;')})">✏️ Edit</button>`;
+            }
+            if (b.status !== 'COLLECTED') {
+                actions.innerHTML += `<button class="btn btn-sm" style="background:#fbe9e7;color:var(--danger);" onclick="closeModal('view-modal'); deleteBooking(${b.id})">🗑 Delete</button>`;
+            }
+            document.getElementById('view-modal').classList.add('open');
+        }
+
+        // ---- EDIT MODAL ----
+        function openEditModal(b) {
+            document.getElementById('edit-booking-id').value = b.id;
+            document.getElementById('edit-waste-type').value = b.wasteType;
+            document.getElementById('edit-address').value = b.pickupAddress;
+            document.getElementById('edit-date').value = b.collectionDate;
+            document.getElementById('edit-instructions').value = b.specialInstructions || '';
+            document.getElementById('edit-weight').value = b.weight != null ? b.weight : 1;
+            // Set min date to tomorrow
+            const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+            document.getElementById('edit-date').min = toLocalDateInputValue(tomorrow);
+            refreshEditTimeSlotOptions(b.timeSlot);
+            document.getElementById('edit-alert').innerHTML = '';
+            document.getElementById('edit-modal').classList.add('open');
+        }
+
+        async function submitEdit(e) {
+            e.preventDefault();
+            const btn = document.getElementById('edit-save-btn');
+            btn.innerHTML = '<span class="spinner"></span> Saving...'; btn.disabled = true;
+            const id = document.getElementById('edit-booking-id').value;
+            const payload = {
+                pickupAddress: document.getElementById('edit-address').value.trim(),
+                wasteType: document.getElementById('edit-waste-type').value,
+                collectionDate: document.getElementById('edit-date').value,
+                timeSlot: document.getElementById('edit-time-slot').value,
+                specialInstructions: document.getElementById('edit-instructions').value.trim(),
+                weight: parseFloat(document.getElementById('edit-weight').value) || 1.0
+            };
+            const minDate = new Date();
+            minDate.setHours(0, 0, 0, 0);
+            minDate.setDate(minDate.getDate() + 1);
+            const selectedDate = new Date(payload.collectionDate + 'T00:00:00');
+            if (selectedDate < minDate) {
+                document.getElementById('edit-alert').innerHTML =
+                    `<div class="alert alert-error">❌ Collection date must be at least 1 day in advance.</div>`;
+                btn.innerHTML = '💾 Save Changes'; btn.disabled = false;
+                return;
+            }
+            if (isPastSlotForToday(payload.timeSlot, payload.collectionDate)) {
+                document.getElementById('edit-alert').innerHTML =
+                    `<div class="alert alert-error">❌ Please choose an upcoming time slot.</div>`;
+                btn.innerHTML = '💾 Save Changes'; btn.disabled = false;
+                return;
+            }
+            try {
+                const res = await fetch(`${BASE_URL}/bookings/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    closeModal('edit-modal');
+                    showAlert('Booking updated successfully!', 'success');
+                    loadBookings();
+                } else {
+                    document.getElementById('edit-alert').innerHTML =
+                        `<div class="alert alert-error">❌ ${data.error || 'Update failed.'}</div>`;
+                }
+            } catch (err) {
+                document.getElementById('edit-alert').innerHTML =
+                    `<div class="alert alert-error">❌ Cannot connect to server.</div>`;
+            } finally {
+                btn.innerHTML = '💾 Save Changes'; btn.disabled = false;
+            }
+        }
+
+        // ---- CANCEL (soft delete) ----
+        async function cancelBooking(bookingId) {
+            if (!confirm('Cancel this booking?')) return;
+            try {
+                const res = await fetch(`${BASE_URL}/bookings/${bookingId}/cancel`, { method: 'DELETE' });
+                const data = await res.json();
+                if (res.ok) { showAlert('Booking cancelled.', 'success'); loadBookings(); }
+                else showAlert(data.error || 'Failed to cancel.', 'error');
+            } catch { showAlert('Cannot connect to server.', 'error'); }
+        }
+
+        // ---- DELETE (hard delete) ----
+        async function deleteBooking(bookingId) {
+            if (!confirm('Permanently delete this booking? This cannot be undone.')) return;
+            try {
+                const res = await fetch(`${BASE_URL}/bookings/${bookingId}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (res.ok) { showAlert('Booking deleted.', 'success'); loadBookings(); }
+                else showAlert(data.error || 'Failed to delete.', 'error');
+            } catch { showAlert('Cannot connect to server.', 'error'); }
+        }
+
+        // ---- MODAL HELPERS ----
+        function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+        document.querySelectorAll('.modal-overlay').forEach(m => {
+            m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+        });
+        document.getElementById('edit-date').addEventListener('change', () => refreshEditTimeSlotOptions());
+
+        validateSession().then(valid => { if (valid) loadBookings(); });
+    </script>
+
+</body>
+</html>

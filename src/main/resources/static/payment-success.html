@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Successful - Waste Wise</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <span class="logo-icon">♻️</span>
+            <span>Waste Wise</span>
+        </div>
+        <ul class="navbar-nav">
+            <li><a href="dashboard.html">Dashboard</a></li>
+        </ul>
+    </nav>
+
+    <div class="success-page">
+        <div class="success-card">
+            <span class="success-icon">🎉</span>
+            <h2>Payment Successful!</h2>
+            <p>Your garbage collection has been booked and confirmed. Our team will arrive at your location on the scheduled date.</p>
+
+            <div class="transaction-box">
+                <div style="font-size:0.78rem; color: var(--text-light); margin-bottom:4px;">Transaction ID</div>
+                <span id="txn-id">-</span>
+            </div>
+
+            <div style="background: var(--bg-light); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem; text-align: left;">
+                <div class="payment-row" style="padding: 4px 0;">
+                    <span style="color:var(--text-medium); font-size:0.88rem;">Booking ID</span>
+                    <span id="success-booking-id" style="font-weight:700; color: var(--primary-dark);">#-</span>
+                </div>
+                <div class="payment-row" style="padding: 4px 0;">
+                    <span style="color:var(--text-medium); font-size:0.88rem;">Amount Paid</span>
+                    <span id="success-amount" style="font-weight:700; color: var(--primary-dark);">LKR 0</span>
+                </div>
+                <div class="payment-row" style="padding: 4px 0;">
+                    <span style="color:var(--text-medium); font-size:0.88rem;">Date & Time</span>
+                    <span id="success-datetime" style="font-weight:700; color: var(--primary-dark);">-</span>
+                </div>
+                <div class="payment-row" style="padding: 4px 0;">
+                    <span style="color:var(--text-medium); font-size:0.88rem;">Status</span>
+                    <span class="badge badge-confirmed">✅ CONFIRMED</span>
+                </div>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:0.8rem;">
+                <a href="dashboard.html" class="btn btn-primary btn-full">📊 Go to Dashboard</a>
+                <a href="booking.html" class="btn btn-outline" style="color: var(--primary-dark); border-color: var(--border); background: var(--bg-light);">
+                    + Book Another Pickup
+                </a>
+            </div>
+
+            <p style="margin-top: 1.5rem; font-size: 0.82rem; color: var(--text-light);">
+                📧 A confirmation email has been sent to your registered email address.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const txn = params.get('txn') || 'N/A';
+        const amount = params.get('amount') || '0';
+        const bookingId = params.get('bookingId') || '-';
+
+        document.getElementById('txn-id').textContent = txn;
+        document.getElementById('success-amount').textContent = 'LKR ' + amount;
+        document.getElementById('success-booking-id').textContent = '#' + bookingId;
+
+        const now = new Date();
+        document.getElementById('success-datetime').textContent = now.toLocaleString('en-IN');
+    </script>
+
+</body>
+</html>

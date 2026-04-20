@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Bookings - Waste Wise</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Modal Overlay */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal-box {
+            background: #fff;
+            border-radius: var(--radius);
+            padding: 2rem;
+            width: 100%;
+            max-width: 560px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        .modal-close {
+            position: absolute;
+            top: 0.8rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.4rem;
+            cursor: pointer;
+            color: var(--text-medium);
+            line-height: 1;
+        }
+        .modal-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 1.2rem;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 0.6rem 0;
+            border-bottom: 1px solid var(--border);
+            gap: 1rem;
+            font-size: 0.93rem;
+        }
+        .detail-row:last-child { border-bottom: none; }
+        .detail-row > span:first-child { color: var(--text-medium); min-width: 120px; }
+        .detail-row > span:last-child { font-weight: 600; text-align: right; word-break: break-word; }
+        .modal-actions { display: flex; gap: 0.7rem; flex-wrap: wrap; margin-top: 1.2rem; }
+
+        /* Table */
+        .table-wrapper { overflow-x: auto; border-radius: var(--radius); box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+        table { width: 100%; border-collapse: collapse; background: #fff; font-size: 0.9rem; }
+        thead { background: var(--primary-dark); color: #fff; }
+        thead th { padding: 0.85rem 1rem; text-align: left; font-weight: 600; white-space: nowrap; }
+        tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; }
+        tbody tr:hover { background: var(--bg-light); }
+        tbody td { padding: 0.75rem 1rem; vertical-align: middle; }
+        tbody td.nowrap { white-space: nowrap; }
+
+        /* Status selector in edit modal */
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 0.35rem; color: var(--text-dark); font-size: 0.92rem; }
+        .form-control { width: 100%; padding: 0.6rem 0.8rem; border: 1px solid var(--border); border-radius: 8px; font-size: 0.93rem; color: var(--text-dark); background: #fff; }
+        .required { color: var(--danger); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+        /* Search */
+        .search-bar { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; margin-bottom: 1rem; }
+        .search-bar input, .search-bar select { padding: 0.55rem 0.9rem; border: 1px solid var(--border); border-radius: 8px; font-size: 0.92rem; color: var(--text-dark); }
+        .search-bar input { flex: 1; min-width: 180px; }
+    </style>
+</head>
+<body>
+
+    <!-- ====== VIEW BOOKING MODAL ====== -->
+    <div class="modal-overlay" id="view-modal">
+        <div class="modal-box">
+            <button class="modal-close" onclick="closeModal('view-modal')">✕</button>
+            <div class="modal-title">📋 Booking Details</div>
+            <div id="view-modal-content"></div>
+            <div class="modal-actions" id="view-modal-actions"></div>
+        </div>
+    </div>
+
+    <!-- ====== EDIT STATUS MODAL ====== -->
+    <div class="modal-overlay" id="edit-modal">
+        <div class="modal-box">
+            <button class="modal-close" onclick="closeModal('edit-modal')">✕</button>
+            <div class="modal-title">✏️ Edit Booking</div>
+            <div id="edit-alert"></div>
+            <form id="edit-form" onsubmit="submitEdit(event)">
+                <input type="hidden" id="edit-booking-id">
+                <div class="form-group">
+                    <label>Waste Type <span class="required">*</span></label>
+                    <select id="edit-waste-type" class="form-control" required>
+                        <option value="GENERAL">🗑️ General Waste — LKR 200/kg</option>
+                        <option value="RECYCLABLE">📦 Recyclable Waste — LKR 150/kg</option>
+                        <option value="ORGANIC">🌱 Organic Waste — LKR 100/kg</option>
+                        <option value="HAZARDOUS">☣️ Hazardous Waste — LKR 500/kg</option>
+                        <option value="ELECTRONIC">💻 Electronic Waste — LKR 400/kg</option>
+                        <option value="CONSTRUCTION">🧱 Construction Debris — LKR 800/kg</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Estimated Weight (kg) <span class="required">*</span></label>
+                    <input type="number" id="edit-weight" class="form-control" min="0.1" max="10000" step="0.1" required>
+                </div>
+                <div class="form-group">
+                    <label>Pickup Address <span class="required">*</span></label>
+                    <textarea id="edit-address" class="form-control" rows="2" required></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Collection Date <span class="required">*</span></label>
+                        <input type="date" id="edit-date" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Time Slot <span class="required">*</span></label>
+                        <select id="edit-time-slot" class="form-control" required>
+                            <option value="MORNING">08:00 AM – 10:00 AM</option>
+                            <option value="MID_MORNING">10:00 AM – 12:00 PM</option>
+                            <option value="AFTERNOON">12:00 PM – 02:00 PM</option>
+                            <option value="LATE_AFTERNOON">02:00 PM – 04:00 PM</option>
+                            <option value="EVENING">04:00 PM – 06:00 PM</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="edit-status" class="form-control">
+                        <option value="PENDING">⏳ Pending</option>
+                        <option value="CONFIRMED">✅ Confirmed</option>
+                        <option value="COLLECTED">🚛 Collected</option>
+                        <option value="CANCELLED">✖ Cancelled</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Special Instructions</label>
+                    <textarea id="edit-instructions" class="form-control" rows="2" placeholder="Any special notes..."></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn btn-primary" id="edit-save-btn">💾 Save Changes</button>
+                    <button type="button" class="btn" style="background:var(--bg-light);color:var(--text-dark);" onclick="closeModal('edit-modal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="dashboard-layout">
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-user">
+                <div class="sidebar-avatar">👤</div>
+                <h4 id="sidebar-name">User</h4>
+                <p id="sidebar-email">user@email.com</p>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="admin-dashboard.html">
+                    <span class="nav-icon">🏠</span> Dashboard
+                </a>
+                <a href="booking.html">
+                    <span class="nav-icon">📋</span> New Booking
+                </a>
+                <a href="all-bookings.html" class="active">
+                    <span class="nav-icon">📊</span> All Bookings
+                </a>
+                <a href="login.html" id="logout-btn" style="margin-top: auto;">
+                    <span class="nav-icon">🚪</span> Logout
+                </a>
+            </nav>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+            <div class="page-title">📊 All Bookings</div>
+
+            <!-- STATS -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">📦</div>
+                    <div class="stat-info"><h3 id="stat-total">0</h3><p>Total Bookings</p></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⏳</div>
+                    <div class="stat-info"><h3 id="stat-pending">0</h3><p>Pending</p></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-info"><h3 id="stat-confirmed">0</h3><p>Confirmed</p></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🚛</div>
+                    <div class="stat-info"><h3 id="stat-collected">0</h3><p>Collected</p></div>
+                </div>
+            </div>
+
+            <!-- SEARCH & FILTER -->
+            <div class="search-bar">
+                <input type="text" id="search-input" placeholder="🔍 Search by user, address, waste type..." oninput="applyFilters()">
+                <select id="status-filter" onchange="applyFilters()">
+                    <option value="ALL">All Statuses</option>
+                    <option value="PENDING">⏳ Pending</option>
+                    <option value="CONFIRMED">✅ Confirmed</option>
+                    <option value="COLLECTED">🚛 Collected</option>
+                    <option value="CANCELLED">✖ Cancelled</option>
+                </select>
+                <select id="waste-filter" onchange="applyFilters()">
+                    <option value="ALL">All Waste Types</option>
+                    <option value="GENERAL">🗑️ General</option>
+                    <option value="RECYCLABLE">📦 Recyclable</option>
+                    <option value="ORGANIC">🌱 Organic</option>
+                    <option value="HAZARDOUS">☣️ Hazardous</option>
+                    <option value="ELECTRONIC">💻 Electronic</option>
+                    <option value="CONSTRUCTION">🧱 Construction</option>
+                </select>
+                <button class="btn btn-outline btn-sm" onclick="resetFilters()" style="background:var(--bg-light);color:var(--text-dark);border-color:var(--border);">↺ Reset</button>
+            </div>
+
+            <div id="alert-box"></div>
+
+            <div class="table-wrapper">
+                <table id="bookings-table">
+                    <thead>
+                        <tr>
+                            <th>#ID</th>
+                            <th>User</th>
+                            <th>Waste Type</th>
+                            <th>Weight (kg)</th>
+                            <th>Date</th>
+                            <th>Time Slot</th>
+                            <th>Status</th>
+                            <th>Amount (LKR)</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body">
+                        <tr><td colspan="9" style="text-align:center; padding:2rem; color:var(--text-light);"><span class="spinner"></span> Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div id="results-count" style="margin-top:0.6rem; color:var(--text-medium); font-size:0.87rem;"></div>
+        </main>
+    </div>
+
+    <script>
+        const BASE_URL = window.location.port === '8080'
+            ? `${window.location.protocol}//${window.location.hostname}:8080/api`
+            : 'http://localhost:8080/api';
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user) window.location.href = 'login.html';
+        if (user.role !== 'ADMIN') {
+            alert('Access denied. Admin privileges required.');
+            window.location.href = 'dashboard.html';
+        }
+
+        document.getElementById('sidebar-name').textContent = user.name || 'User';
+        document.getElementById('sidebar-email').textContent = user.email || '';
+        document.getElementById('logout-btn').addEventListener('click', e => {
+            e.preventDefault(); localStorage.removeItem('user'); window.location.href = 'login.html';
+        });
+
+        // Session validation
+        fetch(`${BASE_URL}/users/${user.id}`).then(res => {
+            if (res.status === 404 || !res.ok) {
+                localStorage.removeItem('user');
+                alert('Your session is no longer valid. Please log in again.');
+                window.location.href = 'login.html';
+            }
+        }).catch(() => {});
+
+        const wasteLabels = {
+            GENERAL: '🗑️ General', RECYCLABLE: '📦 Recyclable',
+            ORGANIC: '🌱 Organic', HAZARDOUS: '☣️ Hazardous',
+            ELECTRONIC: '💻 Electronic', CONSTRUCTION: '🧱 Construction'
+        };
+        const timeSlotLabels = {
+            MORNING: '08:00–10:00', MID_MORNING: '10:00–12:00',
+            AFTERNOON: '12:00–14:00', LATE_AFTERNOON: '14:00–16:00',
+            EVENING: '16:00–18:00'
+        };
+        const slotStartHour = {
+            MORNING: 8,
+            MID_MORNING: 10,
+            AFTERNOON: 12,
+            LATE_AFTERNOON: 14,
+            EVENING: 16
+        };
+        const allEditSlotValues = ['MORNING', 'MID_MORNING', 'AFTERNOON', 'LATE_AFTERNOON', 'EVENING'];
+
+        function toLocalDateInputValue(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function isPastSlotForToday(slotValue, selectedDateValue) {
+            if (!slotValue || !selectedDateValue) return false;
+            const todayLocal = toLocalDateInputValue(new Date());
+            if (selectedDateValue !== todayLocal) return false;
+            const startHour = slotStartHour[slotValue];
+            if (typeof startHour !== 'number') return false;
+            const now = new Date();
+            return (startHour * 60) <= (now.getHours() * 60 + now.getMinutes());
+        }
+
+        function refreshEditTimeSlotOptions(preferredValue = '') {
+            const dateValue = document.getElementById('edit-date').value;
+            const slotSelect = document.getElementById('edit-time-slot');
+            const available = allEditSlotValues.filter(slot => !isPastSlotForToday(slot, dateValue));
+
+            slotSelect.innerHTML = '<option value="">-- Select Slot --</option>';
+            available.forEach(slot => {
+                const option = document.createElement('option');
+                option.value = slot;
+                option.textContent = timeSlotLabels[slot] || slot;
+                slotSelect.appendChild(option);
+            });
+
+            if (preferredValue && available.includes(preferredValue)) {
+                slotSelect.value = preferredValue;
+            } else {
+                slotSelect.value = '';
+            }
+        }
+        function normalizeStatus(status) {
+            if (status === 'APPROVED') return 'CONFIRMED';
+            if (status === 'COMPLETED') return 'COLLECTED';
+            return status;
+        }
+
+        function getBadgeClass(s) {
+            const normalized = normalizeStatus(s);
+            return {PENDING:'badge-pending',CONFIRMED:'badge-confirmed',COLLECTED:'badge-collected',CANCELLED:'badge-cancelled'}[normalized] || 'badge-pending';
+        }
+
+        let allBookings = [];
+
+        function showAlert(msg, type = 'error') {
+            const box = document.getElementById('alert-box');
+            const icons = {success:'✅',error:'❌',warning:'⚠️',info:'ℹ️'};
+            box.innerHTML = `<div class="alert alert-${type}">${icons[type]||''} ${msg}</div>`;
+            if (type !== 'success') setTimeout(() => box.innerHTML = '', 5000);
+        }
+
+        async function loadAllBookings() {
+            try {
+                const res = await fetch(`${BASE_URL}/bookings`);
+                allBookings = await res.json();
+                updateStats();
+                applyFilters();
+            } catch (err) {
+                document.getElementById('table-body').innerHTML =
+                    `<tr><td colspan="9" style="text-align:center;padding:2rem;" class="alert alert-error">❌ Cannot load bookings. Is the server running?</td></tr>`;
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('stat-total').textContent = allBookings.length;
+            document.getElementById('stat-pending').textContent = allBookings.filter(b => normalizeStatus(b.status) === 'PENDING').length;
+            document.getElementById('stat-confirmed').textContent = allBookings.filter(b => normalizeStatus(b.status) === 'CONFIRMED').length;
+            document.getElementById('stat-collected').textContent = allBookings.filter(b => normalizeStatus(b.status) === 'COLLECTED').length;
+        }
+
+        function applyFilters() {
+            const search = document.getElementById('search-input').value.trim().toLowerCase();
+            const status = document.getElementById('status-filter').value;
+            const waste = document.getElementById('waste-filter').value;
+
+            let filtered = allBookings;
+            if (status !== 'ALL') filtered = filtered.filter(b => normalizeStatus(b.status) === status);
+            if (waste !== 'ALL') filtered = filtered.filter(b => b.wasteType === waste);
+            if (search) {
+                filtered = filtered.filter(b =>
+                    (b.user && b.user.name && b.user.name.toLowerCase().includes(search)) ||
+                    (b.pickupAddress && b.pickupAddress.toLowerCase().includes(search)) ||
+                    (b.wasteType && b.wasteType.toLowerCase().includes(search)) ||
+                    String(b.id).includes(search)
+                );
+            }
+            renderTable(filtered);
+        }
+
+        function resetFilters() {
+            document.getElementById('search-input').value = '';
+            document.getElementById('status-filter').value = 'ALL';
+            document.getElementById('waste-filter').value = 'ALL';
+            applyFilters();
+        }
+
+        function renderTable(bookings) {
+            const tbody = document.getElementById('table-body');
+            document.getElementById('results-count').textContent = `Showing ${bookings.length} of ${allBookings.length} bookings`;
+            if (bookings.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:2rem; color:var(--text-light);">📭 No bookings match your search.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = bookings.map(b => `
+                <tr>
+                    <td class="nowrap"><strong>#${b.id}</strong></td>
+                    <td>${b.user ? escHtml(b.user.name) : '—'}<br><small style="color:var(--text-light);">${b.user ? escHtml(b.user.email) : ''}</small></td>
+                    <td class="nowrap">${wasteLabels[b.wasteType] || b.wasteType}</td>
+                    <td class="nowrap">${b.weight != null ? b.weight + ' kg' : '—'}</td>
+                    <td class="nowrap">${b.collectionDate}</td>
+                    <td class="nowrap">${timeSlotLabels[b.timeSlot] || b.timeSlot}</td>
+                    <td class="nowrap"><span class="badge ${getBadgeClass(b.status)}">${b.status}</span></td>
+                    <td class="nowrap">LKR ${b.amount != null ? b.amount : '—'}</td>
+                    <td class="nowrap">
+                        <button class="btn btn-sm" style="background:var(--bg-light);color:var(--primary-dark);" onclick='openViewModal(${safeJson(b)})'>👁 View</button>
+                        <button class="btn btn-primary btn-sm" onclick='openEditModal(${safeJson(b)})'>✏️ Edit</button>
+                        ${b.status !== 'COLLECTED' ? `<button class="btn btn-sm" style="background:#fbe9e7;color:var(--danger);border:1px solid #ffccbc;" onclick="deleteBooking(${b.id})">🗑 Delete</button>` : ''}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function escHtml(s) {
+            if (!s) return '';
+            return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+        function safeJson(obj) {
+            return JSON.stringify(obj).replace(/'/g, '&#39;');
+        }
+
+        // ---- VIEW MODAL ----
+        function openViewModal(b) {
+            document.getElementById('view-modal-content').innerHTML = `
+                <div class="detail-row"><span>Booking ID</span><span>#${b.id}</span></div>
+                <div class="detail-row"><span>Status</span><span><span class="badge ${getBadgeClass(b.status)}">${b.status}</span></span></div>
+                <div class="detail-row"><span>User</span><span>${b.user ? escHtml(b.user.name) : '—'}<br><small style="color:var(--text-light);">${b.user ? escHtml(b.user.email) : ''}</small></span></div>
+                <div class="detail-row"><span>Waste Type</span><span>${wasteLabels[b.wasteType] || b.wasteType}</span></div>
+                <div class="detail-row"><span>Weight</span><span>${b.weight != null ? b.weight + ' kg' : '—'}</span></div>
+                <div class="detail-row"><span>Pickup Address</span><span>${escHtml(b.pickupAddress)}</span></div>
+                <div class="detail-row"><span>Collection Date</span><span>${b.collectionDate}</span></div>
+                <div class="detail-row"><span>Time Slot</span><span>${timeSlotLabels[b.timeSlot] || b.timeSlot}</span></div>
+                <div class="detail-row"><span>Amount</span><span>LKR ${b.amount}</span></div>
+                <div class="detail-row"><span>Special Instructions</span><span>${escHtml(b.specialInstructions) || '—'}</span></div>
+                <div class="detail-row"><span>Created</span><span>${new Date(b.createdAt).toLocaleString('en-LK')}</span></div>
+            `;
+            const actions = document.getElementById('view-modal-actions');
+            actions.innerHTML = `<button class="btn btn-primary btn-sm" onclick="closeModal('view-modal'); openEditModal(${safeJson(b).replace(/"/g,'&quot;')})">✏️ Edit</button>`;
+            if (b.status !== 'COLLECTED') {
+                actions.innerHTML += `<button class="btn btn-sm" style="background:#fbe9e7;color:var(--danger);" onclick="closeModal('view-modal'); deleteBooking(${b.id})">🗑 Delete</button>`;
+            }
+            document.getElementById('view-modal').classList.add('open');
+        }
+
+        // ---- EDIT MODAL ----
+        function openEditModal(b) {
+            document.getElementById('edit-booking-id').value = b.id;
+            document.getElementById('edit-waste-type').value = b.wasteType;
+            document.getElementById('edit-weight').value = b.weight != null ? b.weight : 1;
+            document.getElementById('edit-address').value = b.pickupAddress;
+            document.getElementById('edit-date').value = b.collectionDate;
+            refreshEditTimeSlotOptions(b.timeSlot);
+            document.getElementById('edit-status').value = b.status;
+            document.getElementById('edit-instructions').value = b.specialInstructions || '';
+            document.getElementById('edit-alert').innerHTML = '';
+            document.getElementById('edit-modal').classList.add('open');
+        }
+
+        async function submitEdit(e) {
+            e.preventDefault();
+            const btn = document.getElementById('edit-save-btn');
+            btn.innerHTML = '<span class="spinner"></span> Saving...'; btn.disabled = true;
+            const id = document.getElementById('edit-booking-id').value;
+            const newStatus = document.getElementById('edit-status').value;
+
+            const payload = {
+                pickupAddress: document.getElementById('edit-address').value.trim(),
+                wasteType: document.getElementById('edit-waste-type').value,
+                collectionDate: document.getElementById('edit-date').value,
+                timeSlot: document.getElementById('edit-time-slot').value,
+                specialInstructions: document.getElementById('edit-instructions').value.trim(),
+                weight: parseFloat(document.getElementById('edit-weight').value) || 1.0
+            };
+            if (isPastSlotForToday(payload.timeSlot, payload.collectionDate)) {
+                document.getElementById('edit-alert').innerHTML =
+                    `<div class="alert alert-error">❌ Please choose an upcoming time slot.</div>`;
+                btn.innerHTML = '💾 Save Changes'; btn.disabled = false;
+                return;
+            }
+
+            try {
+                // Update booking fields
+                const res = await fetch(`${BASE_URL}/bookings/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!res.ok) {
+                    const data = await res.json();
+                    document.getElementById('edit-alert').innerHTML =
+                        `<div class="alert alert-error">❌ ${data.error || 'Update failed.'}</div>`;
+                    return;
+                }
+
+                // Also update status separately if booking allows it
+                await fetch(`${BASE_URL}/bookings/${id}/status`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: newStatus })
+                }).catch(() => {}); // ignore if not allowed
+
+                closeModal('edit-modal');
+                showAlert('Booking updated successfully!', 'success');
+                loadAllBookings();
+            } catch (err) {
+                document.getElementById('edit-alert').innerHTML =
+                    `<div class="alert alert-error">❌ Cannot connect to server.</div>`;
+            } finally {
+                btn.innerHTML = '💾 Save Changes'; btn.disabled = false;
+            }
+        }
+
+        // ---- DELETE ----
+        async function deleteBooking(bookingId) {
+            if (!confirm('Permanently delete booking #' + bookingId + '? This cannot be undone.')) return;
+            try {
+                const res = await fetch(`${BASE_URL}/bookings/${bookingId}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (res.ok) { showAlert('Booking #' + bookingId + ' deleted.', 'success'); loadAllBookings(); }
+                else showAlert(data.error || 'Failed to delete.', 'error');
+            } catch { showAlert('Cannot connect to server.', 'error'); }
+        }
+
+        // ---- MODAL HELPERS ----
+        function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+        document.querySelectorAll('.modal-overlay').forEach(m => {
+            m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+        });
+        document.getElementById('edit-date').addEventListener('change', () => refreshEditTimeSlotOptions());
+
+        loadAllBookings();
+    </script>
+
+</body>
+</html>

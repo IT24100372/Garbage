@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Booking - Waste Wise</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <span class="logo-icon">♻️</span>
+            <span>Waste Wise</span>
+        </div>
+        <ul class="navbar-nav">
+            <li><a href="dashboard.html">Dashboard</a></li>
+            <li><a href="#" id="logout-nav">Logout</a></li>
+        </ul>
+    </nav>
+
+    <div style="background: var(--bg-light); min-height: calc(100vh - 65px); padding: 2rem 1rem;">
+        <div class="container" style="max-width: 700px;">
+
+            <!-- STEP INDICATOR -->
+            <div class="steps">
+                <div class="step active" id="step-ind-1">
+                    <div class="step-num">1</div>
+                    <div class="step-label">Waste Type</div>
+                </div>
+                <div class="step-line" id="line-1"></div>
+                <div class="step" id="step-ind-2">
+                    <div class="step-num">2</div>
+                    <div class="step-label">Schedule</div>
+                </div>
+                <div class="step-line" id="line-2"></div>
+                <div class="step" id="step-ind-3">
+                    <div class="step-num">3</div>
+                    <div class="step-label">Confirm</div>
+                </div>
+            </div>
+
+            <div id="alert-box"></div>
+
+            <!-- STEP 1: SELECT WASTE TYPE -->
+            <div id="step-1">
+                <div class="card">
+                    <h2 style="color: var(--primary-dark); margin-bottom: 0.3rem;">🗑️ Select Waste Type</h2>
+                    <p style="color: var(--text-medium); margin-bottom: 1.5rem; font-size:0.95rem;">Choose the type of waste you want collected</p>
+
+                    <div class="waste-grid" id="waste-grid">
+                        <label class="waste-option" data-type="GENERAL" data-price="200">
+                            <input type="radio" name="wasteType" value="GENERAL">
+                            <span class="waste-icon">🗑️</span>
+                            <span class="waste-name">General</span>
+                            <span class="waste-price">LKR 200/kg</span>
+                        </label>
+                        <label class="waste-option" data-type="RECYCLABLE" data-price="150">
+                            <input type="radio" name="wasteType" value="RECYCLABLE">
+                            <span class="waste-icon">📦</span>
+                            <span class="waste-name">Recyclable</span>
+                            <span class="waste-price">LKR 150/kg</span>
+                        </label>
+                        <label class="waste-option" data-type="ORGANIC" data-price="100">
+                            <input type="radio" name="wasteType" value="ORGANIC">
+                            <span class="waste-icon">🌱</span>
+                            <span class="waste-name">Organic</span>
+                            <span class="waste-price">LKR 100/kg</span>
+                        </label>
+                        <label class="waste-option" data-type="HAZARDOUS" data-price="500">
+                            <input type="radio" name="wasteType" value="HAZARDOUS">
+                            <span class="waste-icon">☣️</span>
+                            <span class="waste-name">Hazardous</span>
+                            <span class="waste-price">LKR 500/kg</span>
+                        </label>
+                        <label class="waste-option" data-type="ELECTRONIC" data-price="400">
+                            <input type="radio" name="wasteType" value="ELECTRONIC">
+                            <span class="waste-icon">💻</span>
+                            <span class="waste-name">Electronic</span>
+                            <span class="waste-price">LKR 400/kg</span>
+                        </label>
+                        <label class="waste-option" data-type="CONSTRUCTION" data-price="800">
+                            <input type="radio" name="wasteType" value="CONSTRUCTION">
+                            <span class="waste-icon">🧱</span>
+                            <span class="waste-name">Construction</span>
+                            <span class="waste-price">LKR 800/kg</span>
+                        </label>
+                    </div>
+
+                    <button class="btn btn-primary btn-full" onclick="nextStep(2)" id="step1-next">
+                        Continue →
+                    </button>
+                </div>
+            </div>
+
+            <!-- STEP 2: SCHEDULE -->
+            <div id="step-2" style="display:none;">
+                <div class="card">
+                    <h2 style="color: var(--primary-dark); margin-bottom: 0.3rem;">📅 Schedule Pickup</h2>
+                    <p style="color: var(--text-medium); margin-bottom: 1.5rem; font-size:0.95rem;">Choose your preferred date and time slot</p>
+
+                    <div class="form-group">
+                        <label for="pickupAddress">Pickup Address <span class="required">*</span></label>
+                        <textarea id="pickupAddress" class="form-control" rows="3"
+                                  placeholder="Door No., Street, Area, City - Pincode" required></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="collectionDate">Collection Date <span class="required">*</span></label>
+                            <input type="date" id="collectionDate" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="timeSlot">Time Slot <span class="required">*</span></label>
+                            <select id="timeSlot" class="form-control" required>
+                                <option value="">-- Select Slot --</option>
+                                <option value="MORNING">08:00 AM - 10:00 AM</option>
+                                <option value="MID_MORNING">10:00 AM - 12:00 PM</option>
+                                <option value="AFTERNOON">12:00 PM - 02:00 PM</option>
+                                <option value="LATE_AFTERNOON">02:00 PM - 04:00 PM</option>
+                                <option value="EVENING">04:00 PM - 06:00 PM</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="specialInstructions">Special Instructions (Optional)</label>
+                        <textarea id="specialInstructions" class="form-control" rows="2"
+                                  placeholder="e.g., Gate code 1234, leave at front door..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="weight">Estimated Weight (kg) <span class="required">*</span></label>
+                        <input type="number" id="weight" class="form-control" min="0.1" max="10000" step="0.1"
+                               placeholder="e.g. 5.5" required>
+                        <small style="color:var(--text-light); font-size:0.82rem;">Enter the approximate weight of your waste in kilograms</small>
+                    </div>
+
+                    <div style="display:flex; gap:1rem;">
+                        <button class="btn btn-outline" style="background: var(--bg-light); color: var(--primary-dark); border-color: var(--border);" onclick="nextStep(1)">← Back</button>
+                        <button class="btn btn-primary" style="flex:1;" onclick="nextStep(3)">Review Booking →</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 3: CONFIRM -->
+            <div id="step-3" style="display:none;">
+                <div class="card">
+                    <h2 style="color: var(--primary-dark); margin-bottom: 0.3rem;">✅ Confirm Booking</h2>
+                    <p style="color: var(--text-medium); margin-bottom: 1.5rem; font-size:0.95rem;">Review your booking details before confirming</p>
+
+                    <div class="payment-summary">
+                        <h3>📋 Booking Summary</h3>
+                        <div class="payment-row">
+                            <span>Waste Type</span>
+                            <span id="confirm-waste" style="font-weight:600;">-</span>
+                        </div>
+                        <div class="payment-row">
+                            <span>⚖️ Weight</span>
+                            <span id="confirm-weight" style="font-weight:600;">-</span>
+                        </div>
+                        <div class="payment-row">
+                            <span>📍 Pickup Address</span>
+                            <span id="confirm-address" style="font-weight:600; max-width:55%; text-align:right;">-</span>
+                        </div>
+                        <div class="payment-row">
+                            <span>📅 Collection Date</span>
+                            <span id="confirm-date" style="font-weight:600;">-</span>
+                        </div>
+                        <div class="payment-row">
+                            <span>🕐 Time Slot</span>
+                            <span id="confirm-slot" style="font-weight:600;">-</span>
+                        </div>
+                        <div class="payment-row">
+                            <span>📝 Special Instructions</span>
+                            <span id="confirm-instructions" style="font-weight:600;">None</span>
+                        </div>
+                        <div class="payment-row total">
+                            <span>💰 Total Amount</span>
+                            <span id="confirm-amount">LKR 0</span>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        ℹ️ After confirming, you'll be redirected to the payment page to complete your booking.
+                    </div>
+
+                    <div style="display:flex; gap:1rem; margin-top:1rem;">
+                        <button class="btn btn-outline" style="background: var(--bg-light); color: var(--primary-dark); border-color: var(--border);" onclick="nextStep(2)">← Back</button>
+                        <button class="btn btn-secondary" style="flex:1;" id="confirmBtn" onclick="submitBooking()">
+                            Confirm & Pay 💳
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const BASE_URL = window.location.port === '8080'
+            ? `${window.location.protocol}//${window.location.hostname}:8080/api`
+            : 'http://localhost:8080/api';
+
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user) window.location.href = 'login.html';
+
+        document.getElementById('logout-nav').addEventListener('click', function (e) {
+            e.preventDefault();
+            localStorage.removeItem('user');
+            window.location.href = 'login.html';
+        });
+
+        // Verify user still exists in DB (catches stale localStorage after data clear)
+        fetch(`${BASE_URL}/users/${user.id}`).then(res => {
+            if (res.status === 404 || !res.ok) {
+                localStorage.removeItem('user');
+                alert('Your session is no longer valid. Please log in again.');
+                window.location.href = 'login.html';
+            }
+        }).catch(() => {});
+
+        function toLocalDateInputValue(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        const slotStartHour = {
+            MORNING: 8,
+            MID_MORNING: 10,
+            AFTERNOON: 12,
+            LATE_AFTERNOON: 14,
+            EVENING: 16
+        };
+
+        const allTimeSlotOptions = [
+            { value: 'MORNING', label: '08:00 AM - 10:00 AM' },
+            { value: 'MID_MORNING', label: '10:00 AM - 12:00 PM' },
+            { value: 'AFTERNOON', label: '12:00 PM - 02:00 PM' },
+            { value: 'LATE_AFTERNOON', label: '02:00 PM - 04:00 PM' },
+            { value: 'EVENING', label: '04:00 PM - 06:00 PM' }
+        ];
+
+        function isPastSlotForToday(slotValue, selectedDateValue) {
+            if (!slotValue || !selectedDateValue) return false;
+
+            const today = new Date();
+            const todayLocal = toLocalDateInputValue(today);
+            if (selectedDateValue !== todayLocal) return false;
+
+            const startHour = slotStartHour[slotValue];
+            if (typeof startHour !== 'number') return false;
+
+            const nowMinutes = today.getHours() * 60 + today.getMinutes();
+            const slotStartMinutes = startHour * 60;
+            return slotStartMinutes <= nowMinutes;
+        }
+
+        function refreshTimeSlotOptions() {
+            const dateValue = document.getElementById('collectionDate').value;
+            const slotSelect = document.getElementById('timeSlot');
+
+            const previousValue = slotSelect.value;
+            const availableOptions = allTimeSlotOptions.filter(slot => !isPastSlotForToday(slot.value, dateValue));
+
+            slotSelect.innerHTML = '';
+
+            const placeholder = document.createElement('option');
+            placeholder.value = '';
+            placeholder.textContent = availableOptions.length ? '-- Select Slot --' : '-- No slots available for today --';
+            slotSelect.appendChild(placeholder);
+
+            availableOptions.forEach(slot => {
+                const option = document.createElement('option');
+                option.value = slot.value;
+                option.textContent = slot.label;
+                slotSelect.appendChild(option);
+            });
+
+            if (previousValue && availableOptions.some(slot => slot.value === previousValue)) {
+                slotSelect.value = previousValue;
+            } else if (previousValue) {
+                showAlert('Selected date is today. Please choose an upcoming time slot.', 'warning');
+            }
+        }
+
+        // Allow booking from today (past slots are filtered separately).
+        const minCollectionDate = new Date();
+        document.getElementById('collectionDate').min = toLocalDateInputValue(minCollectionDate);
+        document.getElementById('collectionDate').addEventListener('change', refreshTimeSlotOptions);
+        refreshTimeSlotOptions();
+
+        let selectedWasteType = null;
+        let selectedPrice = 0;
+
+        // Waste option selection
+        document.querySelectorAll('.waste-option').forEach(option => {
+            option.addEventListener('click', function () {
+                document.querySelectorAll('.waste-option').forEach(o => o.classList.remove('selected'));
+                this.classList.add('selected');
+                this.querySelector('input').checked = true;
+                selectedWasteType = this.dataset.type;
+                selectedPrice = parseInt(this.dataset.price);
+            });
+        });
+
+        const timeSlotLabels = {
+            MORNING: '08:00 AM - 10:00 AM', MID_MORNING: '10:00 AM - 12:00 PM',
+            AFTERNOON: '12:00 PM - 02:00 PM', LATE_AFTERNOON: '02:00 PM - 04:00 PM',
+            EVENING: '04:00 PM - 06:00 PM'
+        };
+
+        const wasteLabels = {
+            GENERAL: '🗑️ General Waste', RECYCLABLE: '📦 Recyclable Waste',
+            ORGANIC: '🌱 Organic Waste', HAZARDOUS: '☣️ Hazardous Waste',
+            ELECTRONIC: '💻 Electronic Waste', CONSTRUCTION: '🧱 Construction Debris'
+        };
+
+        function showAlert(message, type = 'error') {
+            const box = document.getElementById('alert-box');
+            const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+            box.innerHTML = `<div class="alert alert-${type}">${icons[type] || ''} ${message}</div>`;
+            box.scrollIntoView({ behavior: 'smooth' });
+            if (type !== 'success') setTimeout(() => box.innerHTML = '', 5000);
+        }
+
+        function nextStep(step) {
+            if (step === 2 && !selectedWasteType) {
+                showAlert('Please select a waste type.', 'warning');
+                return;
+            }
+            if (step === 3) {
+                const address = document.getElementById('pickupAddress').value.trim();
+                const date = document.getElementById('collectionDate').value;
+                const slot = document.getElementById('timeSlot').value;
+                const weight = parseFloat(document.getElementById('weight').value);
+                if (!address || !date || !slot) {
+                    showAlert('Please fill in all required fields.', 'warning');
+                    return;
+                }
+                if (!weight || weight <= 0) {
+                    showAlert('Please enter a valid estimated weight (kg).', 'warning');
+                    return;
+                }
+                const selectedDateObj = new Date(date + 'T00:00:00');
+                const minDateObj = new Date();
+                minDateObj.setHours(0, 0, 0, 0);
+                if (selectedDateObj < minDateObj) {
+                    showAlert('Collection date cannot be in the past.', 'warning');
+                    return;
+                }
+                if (isPastSlotForToday(slot, date)) {
+                    showAlert('Past time slots are not allowed for today. Please select an upcoming slot.', 'warning');
+                    return;
+                }
+                const totalAmount = Math.round(selectedPrice * weight * 100) / 100;
+                // Populate confirm step
+                document.getElementById('confirm-waste').textContent = wasteLabels[selectedWasteType];
+                document.getElementById('confirm-weight').textContent = weight + ' kg';
+                document.getElementById('confirm-address').textContent = address;
+                document.getElementById('confirm-date').textContent = date;
+                document.getElementById('confirm-slot').textContent = timeSlotLabels[slot];
+                document.getElementById('confirm-amount').textContent = 'LKR ' + totalAmount;
+                const instructions = document.getElementById('specialInstructions').value.trim();
+                document.getElementById('confirm-instructions').textContent = instructions || 'None';
+            }
+
+            // Hide all steps
+            document.getElementById('step-1').style.display = 'none';
+            document.getElementById('step-2').style.display = 'none';
+            document.getElementById('step-3').style.display = 'none';
+            document.getElementById('step-' + step).style.display = 'block';
+
+            // Update step indicators
+            for (let i = 1; i <= 3; i++) {
+                const el = document.getElementById('step-ind-' + i);
+                el.classList.remove('active', 'done');
+                if (i < step) el.classList.add('done');
+                else if (i === step) el.classList.add('active');
+            }
+            document.getElementById('line-1').classList.toggle('active', step >= 2);
+            document.getElementById('line-2').classList.toggle('active', step >= 3);
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function submitBooking() {
+            const btn = document.getElementById('confirmBtn');
+            btn.innerHTML = '<span class="spinner"></span> Booking...';
+            btn.disabled = true;
+
+            const bookingData = {
+                pickupAddress: document.getElementById('pickupAddress').value.trim(),
+                wasteType: selectedWasteType,
+                collectionDate: document.getElementById('collectionDate').value,
+                timeSlot: document.getElementById('timeSlot').value,
+                specialInstructions: document.getElementById('specialInstructions').value.trim(),
+                weight: parseFloat(document.getElementById('weight').value) || 1.0
+            };
+
+            try {
+                const res = await fetch(`${BASE_URL}/bookings/user/${user.id}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(bookingData)
+                });
+
+                const data = await res.json();
+
+                if (res.ok || res.status === 201) {
+                    showAlert('Booking created! Redirecting to payment...', 'success');
+                    setTimeout(() => {
+                        window.location.href = `payment.html?bookingId=${data.id}&amount=${data.amount}`;
+                    }, 1200);
+                } else {
+                    showAlert(data.error || 'Failed to create booking.', 'error');
+                }
+            } catch (err) {
+                showAlert('Cannot connect to server. Make sure Spring Boot is running.', 'error');
+            } finally {
+                btn.innerHTML = 'Confirm & Pay 💳';
+                btn.disabled = false;
+            }
+        }
+    </script>
+
+</body>
+</html>
